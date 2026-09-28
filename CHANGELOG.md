@@ -8,6 +8,12 @@ History before this file: `git log`.
 - PaTiShared window with ••• menu (Settings, Lock/Unlock, Collapse/Expand, Test Mode, Hide), settings modal
   (language, scale, lock), `/pt settings, reset, debug, version`; `/pt` alone shows/hides the window.
 - English texts, German translation.
+- Aggro control monitor: "AGGRO x / y under control" plus up to 4 rows for enemies you lost (with the holder's
+  role, else name, else "other player"), barely hold, or cannot read. Enemies come from your target, visible
+  nameplates and your party's targets. Unreadable (secret) threat data shows as "unclear", never as controlled.
+  Scans are event driven and coalesced (0.1 s); in combat a 1 s fallback rescan catches changes no event reports.
+  Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
+- Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
 - New PaTiShared look instead of the legacy panel (gear, chevron, close button).
 - Only your own UNIT_HEALTH/UNIT_MAXHEALTH updates the health bar (before: every unit's health event redrew everything).
@@ -19,4 +25,6 @@ History before this file: `git log`.
 ### Removed
 - `PaTiSharedPanel.lua` (legacy shared panel global).
 ### Known Issues
-- Not tested in game yet (threat values, layout, secret values in combat).
+- Not tested in game yet (threat values, layout, secret values in combat, the whole aggro monitor).
+- Aggro: enemies without a visible nameplate that nobody in your group targets are not seen. Clicking a row does
+  not target the enemy, and nameplates are not highlighted (see PaTiAdmin FOLLOW_UPS F16/F17).

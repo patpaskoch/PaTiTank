@@ -4,13 +4,20 @@
 Addon facts: `../../PaTiAdmin/docs/ARCHITECTURE.md` · open issues: `../../PaTiAdmin/docs/FOLLOW_UPS.md`.
 
 ## This addon
-- Purpose: own health, current target and your threat on it, for a tank. Display only.
-- Files: `Logic.lua` (settings, threat value; pure, tested) · `PaTiTank.lua` (window, paint, settings, commands, events) ·
+- Purpose: own health, current target and your threat on it, plus an aggro control monitor, for a tank.
+  Display only: never targets, taunts or clicks anything.
+- Files: `Logic.lua` (settings, threat value; pure, tested) · `Aggro.lua` (aggro states/summary; pure, tested) ·
+  `Threat.lua` (the only threat/nameplate API calls; tested with mocks) ·
+  `PaTiTank.lua` (window, paint, scan scheduler, settings, commands, events) ·
   `Locales/` · `Shared/` (PaTiShared, synced — never edit).
 - SavedVariables: `PaTiTankDB` (per character), schema 1: x, y (+ point/relativePoint once dragged), locked, collapsed, scale, language.
 - Secure / combat-sensitive: none — no secure frames, so window, collapse and test mode also work in combat. Keep it that way.
 - Secret values: health, max health, target name and threat go straight to widgets; `Logic.ThreatValue` checks before clamping.
-- Hot path: `UNIT_HEALTH` fires for every unit — only `player` repaints.
+- Secret values (aggro): every threat status, GUID and flag is checked with `issecretvalue` before use; unreadable
+  → `Aggro.UNREADABLE` → state UNKNOWN, never CONTROLLED. Enemy/holder names only go to SetText.
+- Hot path: `UNIT_HEALTH` fires for every unit — only `player` repaints. Aggro scans are coalesced (`requestScan`,
+  0.1 s), skipped while collapsed or in test mode; nameplates are tracked by events, never by looping 1..40.
+  `UNIT_TARGET` fires for every unit — only party1-4 trigger a scan.
 - Slash commands: `/pt`, `/patitank`.
 
 ## Checks

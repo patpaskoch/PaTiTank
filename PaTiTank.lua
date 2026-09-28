@@ -1,9 +1,10 @@
 -- PaTiTank: own health, current target and your threat on it. Display only; no secure frames.
 local addonName, ns = ...
-local UI, L, Logic = ns.UI, ns.UI.L, ns.Logic
+local UI, L, Logic, Aggro, Threat = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat
 
 local DB
 local testMode = false
+local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
 local HEALTH_HEIGHT, THREAT_HEIGHT = 22, 16
@@ -58,7 +59,39 @@ local threatTop = healthTop + HEALTH_HEIGHT + UI.Spacing.MD
 local health = makeBar(healthTop, HEALTH_HEIGHT, "Health", "OWN_HEALTH")
 local threat = makeBar(threatTop, THREAT_HEIGHT, "Danger", "THREAT")
 threat:SetMinMaxValues(0, 100)
-local FULL_HEIGHT = UI.Sizes.HeaderHeight + threatTop + THREAT_HEIGHT + PAD
+
+-- Aggro block: "AGGRO  x / y under control", then up to Aggro.MAX_ROWS enemies you do not (safely) hold.
+local aggroTop = threatTop + THREAT_HEIGHT + UI.Spacing.MD
+local aggroLabel = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
+aggroLabel:SetPoint("TOPLEFT", PAD, -aggroTop)
+UI.BindText(aggroLabel, "AGGRO")
+local aggroSummary = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+aggroSummary:SetPoint("TOPRIGHT", -PAD, -aggroTop)
+aggroSummary:SetJustifyH("RIGHT")
+
+local HOLDER_WIDTH = 96
+local STATE_COLOR = { LOST = "Danger", DANGER = "Warning", UNKNOWN = "TextMuted" }
+local rows = {}
+for index = 1, Aggro.MAX_ROWS do
+    local top = aggroTop + index * LINE
+    local marker = content:CreateTexture(nil, "ARTWORK")
+    marker:SetPoint("TOPLEFT", PAD, -top - 3)
+    marker:SetSize(3, LINE - 6)
+    local holder = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    holder:SetPoint("TOPRIGHT", -PAD, -top - 2)
+    holder:SetWidth(HOLDER_WIDTH)
+    holder:SetJustifyH("RIGHT")
+    holder:SetWordWrap(false)
+    local name = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    name:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM, -top - 2)
+    name:SetPoint("RIGHT", holder, "LEFT", -UI.Spacing.SM, 0)
+    name:SetJustifyH("LEFT")
+    name:SetWordWrap(false)
+    rows[index] = { marker = marker, name = name, holder = holder }
+end
+
+local FULL_HEIGHT = UI.Sizes.HeaderHeight + aggroTop + LINE + PAD -- without aggro rows
+local shownRows = 0
 
 -- Paint (health and threat values may be secret: they only reach StatusBar widgets) --------------
 
@@ -86,17 +119,93 @@ local function paintTarget()
     end
 end
 
-local function paintAll()
-    if not DB then return end
-    paintHealth()
-    paintTarget()
+-- Test mode: 6 enemies, 4 held, 1 barely held, 1 on the healer. Names are looked up at paint time (language).
+local TEST_ENEMIES = {
+    { key = "TEST_ENEMY_1", state = "CONTROLLED" }, { key = "TEST_ENEMY_2", state = "CONTROLLED" },
+    { key = "TEST_ENEMY_3", state = "LOST", holder = { role = "HEALER" } }, { key = "TEST_ENEMY_4", state = "CONTROLLED" },
+    { key = "TEST_ENEMY_5", state = "DANGER" }, { key = "TEST_ENEMY_6", state = "CONTROLLED" },
+}
+
+local function holderText(enemy)
+    if enemy.state == "DANGER" then return L.AGGRO_DANGER end
+    if enemy.state == "UNKNOWN" then return L.AGGRO_UNKNOWN end
+    local label = Aggro.HolderLabel(enemy.holder)
+    if label == "NAME" then return enemy.holder.name end -- may be secret: only handed to SetText
+    return L[label] or L.OTHER_PLAYER
 end
 
 local function applyLayout()
     content:SetShown(not DB.collapsed)
-    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or FULL_HEIGHT)
+    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or FULL_HEIGHT + shownRows * LINE)
     window:SetTestMode(testMode)
 end
+
+local function paintAggro()
+    local enemies = testMode and TEST_ENEMIES or Threat.Scan()
+    local summary = Aggro.Summarize(enemies)
+    if summary.total == 0 then
+        aggroSummary:SetText(L.AGGRO_NONE)
+    elseif #summary.rows > Aggro.MAX_ROWS then
+        aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total) .. "  "
+            .. L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS))
+    else
+        aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total))
+    end
+    aggroSummary:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
+    local count = math.min(#summary.rows, Aggro.MAX_ROWS)
+    for index, row in ipairs(rows) do
+        local enemy = summary.rows[index]
+        local shown = index <= count
+        row.marker:SetShown(shown)
+        row.name:SetShown(shown)
+        row.holder:SetShown(shown)
+        if shown then
+            local color = STATE_COLOR[enemy.state]
+            row.marker:SetColorTexture(UI.Color(color))
+            local name = enemy.key and L[enemy.key] or enemy.name
+            if isSecret(name) or name ~= nil then row.name:SetText(name) else row.name:SetText(L.UNKNOWN_ENEMY) end
+            row.holder:SetText(holderText(enemy))
+            row.holder:SetTextColor(UI.Color(color))
+        end
+    end
+    if count ~= shownRows then
+        shownRows = count
+        applyLayout() -- no secure frames: resizing is fine in combat
+    end
+end
+
+local function paintAll()
+    if not DB then return end
+    paintHealth()
+    paintTarget()
+    paintAggro()
+end
+
+-- Aggro scans are coalesced: a burst of threat/nameplate events causes one scan SCAN_DELAY later.
+-- In combat a slow fallback rescan catches changes no event reports (e.g. an enemy dying).
+local SCAN_DELAY, COMBAT_RESCAN = 0.1, 1.0
+local scheduler = CreateFrame("Frame")
+scheduler:Hide()
+local due -- seconds until the next scan while the scheduler is shown
+
+local function requestScan()
+    if not DB or testMode or DB.collapsed then return end -- expanding repaints (paintAll)
+    if not due or due > SCAN_DELAY then due = SCAN_DELAY end
+    scheduler:Show()
+end
+
+scheduler:SetScript("OnUpdate", function(self, elapsed)
+    due = due - elapsed
+    if due > 0 then return end
+    if testMode then due = nil; self:Hide(); return end
+    paintAggro()
+    if InCombatLockdown() then
+        due = COMBAT_RESCAN
+    else
+        due = nil
+        self:Hide()
+    end
+end)
 
 -- Settings -------------------------------------------------------------------------------------
 
@@ -145,6 +254,7 @@ end
 local function toggleCollapsed()
     DB.collapsed = not DB.collapsed
     applyLayout()
+    paintAll()
 end
 
 local function setShown(shown)
@@ -157,6 +267,13 @@ local function resetPosition()
     window:Attach(DB, -330, 0)
 end
 
+local function aggroEventsOk(...)
+    for _, event in ipairs({ ... }) do
+        if not aggroEvents[event] then return "no" end
+    end
+    return "yes"
+end
+
 local function printDebug()
     local version, build, _, interface = GetBuildInfo()
     print("|cff68caffPaTiTank Debug:|r")
@@ -167,6 +284,9 @@ local function printDebug()
         ("Threat API %s · issecretvalue %s · combat %s · test mode %s"):format(
             UnitDetailedThreatSituation and "yes" or "no", issecretvalue and "yes" or "no",
             InCombatLockdown() and "yes" or "no", testMode and "on" or "off"),
+        ("Aggro: UnitThreatSituation %s · nameplate events %s · party target events %s"):format(
+            UnitThreatSituation and "yes" or "no", aggroEventsOk("NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED"),
+            aggroEventsOk("UNIT_TARGET")),
     }) do print("  " .. line) end
 end
 
@@ -208,9 +328,22 @@ for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD", "UNIT_HEALTH",
     "PLAYER_TARGET_CHANGED", "UNIT_THREAT_LIST_UPDATE", "UNIT_THREAT_SITUATION_UPDATE" }) do
     events:RegisterEvent(event)
 end
+-- Aggro events: registered through pcall — should one not exist in this client, the monitor still works
+-- with the rest (see /pt debug).
+for _, event in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED", "UNIT_TARGET", "GROUP_ROSTER_UPDATE",
+    "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
+    aggroEvents[event] = pcall(events.RegisterEvent, events, event)
+end
+local PARTY = { party1 = true, party2 = true, party3 = true, party4 = true }
 
 events:SetScript("OnEvent", function(_, event, unit)
-    if event == "PLAYER_LOGIN" then
+    if event == "NAME_PLATE_UNIT_ADDED" then -- tracked always, so test mode / collapse never lose plates
+        Threat.PlateAdded(unit)
+        requestScan()
+    elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        Threat.PlateRemoved(unit)
+        requestScan()
+    elseif event == "PLAYER_LOGIN" then
         PaTiTankDB = Logic.Migrate(PaTiTankDB)
         DB = PaTiTankDB
         UI.SetLanguage(DB.language)
@@ -224,8 +357,13 @@ events:SetScript("OnEvent", function(_, event, unit)
         if unit == "player" then paintHealth() end -- hot path: every unit fires this; only yours matters
     elseif event == "PLAYER_ENTERING_WORLD" then
         paintAll()
+    elseif event == "UNIT_TARGET" then
+        if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
+    elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+        requestScan()
     else -- target changed or threat changed
         paintTarget()
+        requestScan()
     end
 end)
 UI.OnLanguageChanged(paintAll)

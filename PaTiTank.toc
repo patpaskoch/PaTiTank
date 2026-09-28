@@ -9,4 +9,6 @@ Shared\Shared.xml
 Locales\enUS.lua
 Locales\deDE.lua
 Logic.lua
+Aggro.lua
+Threat.lua
 PaTiTank.lua
