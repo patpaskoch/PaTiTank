@@ -10,6 +10,8 @@ local healthLabel=health:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"
 local threat=CreateFrame("StatusBar",nil,frame); threat:SetPoint("TOPLEFT",14,-91); threat:SetSize(252,16); threat:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8"); threat:SetStatusBarColor(0.85,0.3,0.12,1); threat:SetMinMaxValues(0,100)
 local threatLabel=threat:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall"); threatLabel:SetPoint("CENTER"); threatLabel:SetText("Bedrohung auf Ziel")
 local note=frame:CreateFontString(nil,"OVERLAY","GameFontNormalSmall"); note:SetPoint("BOTTOMLEFT",14,12); note:SetText("/pt test | /pt lock | /pt unlock")
+title:Hide()
+PaTiSharedPanel.Attach(frame,"PaTiTank",{targetText,health,threat,note},"/pt test zeigt die Vorschau.\n/pt lock und /pt unlock sperren das Fenster.")
 local function update()
  if testMode then health:SetMinMaxValues(0,100); health:SetValue(68); threat:SetValue(72); targetText:SetText("Ziel: Testgegner"); return end
  local max=UnitHealthMax("player"); health:SetMinMaxValues(0,max); health:SetValue(UnitHealth("player"))
