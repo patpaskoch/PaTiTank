@@ -5,6 +5,8 @@
 ## Version: 0.1.0
 ## SavedVariablesPerCharacter: PaTiTankDB
 
-PaTiSharedPanel.lua
+Shared\Shared.xml
+Locales\enUS.lua
+Locales\deDE.lua
+Logic.lua
 PaTiTank.lua
-
