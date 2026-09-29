@@ -4,6 +4,7 @@
 ## Notes-deDE: Tank-Anzeige: eigene Gesundheit, Bedrohung auf dem Ziel und verlorene Gegner
 ## Author: PaTi
 ## Version: 0.1.0
+## IconTexture: Interface\AddOns\PaTiTank\Media\icon
 ## SavedVariablesPerCharacter: PaTiTankDB
 
 Shared\Shared.xml
@@ -12,4 +13,5 @@ Locales\deDE.lua
 Logic.lua
 Aggro.lua
 Threat.lua
+Plates.lua
 PaTiTank.lua

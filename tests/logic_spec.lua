@@ -69,3 +69,12 @@ describe("Collapse state", function()
         assert.equal(7, db.x)
     end)
 end)
+
+describe("Nameplate markers setting", function()
+    it("is on for old saves, a saved false stays, Restore Defaults turns it on again", function()
+        local Logic = wow.loadAddonFile("Logic.lua", {}).Logic
+        assert.is_true(Logic.Migrate({ x = 1, y = 2 }).markPlates)
+        assert.is_false(Logic.Migrate({ markPlates = false }).markPlates)
+        assert.is_true(Logic.RestoreDefaults({ markPlates = false }).markPlates)
+    end)
+end)

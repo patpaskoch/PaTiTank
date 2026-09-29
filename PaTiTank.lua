@@ -1,6 +1,6 @@
 -- PaTiTank: own health, current target and your threat on it. Display only; no secure frames.
 local addonName, ns = ...
-local UI, L, Logic, Aggro, Threat = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat
+local UI, L, Logic, Aggro, Threat, Plates = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat, ns.Plates
 
 local DB
 local testMode = false
@@ -142,6 +142,9 @@ end
 
 local function paintAggro()
     local enemies = testMode and TEST_ENEMIES or Threat.Scan()
+    -- "!" on the nameplates of lost/barely held enemies; off in test mode (no real plates) and while collapsed
+    -- (no scans then, so markers could go stale).
+    Plates.Update(enemies, DB.markPlates and not testMode and not DB.collapsed)
     local summary = Aggro.Summarize(enemies)
     if summary.total == 0 then
         aggroSummary:SetText(L.AGGRO_NONE)
@@ -227,6 +230,9 @@ local function buildSettings()
     modal:AddControls(UI.CreateCheckbox(modal, "LOCK_WINDOW", {
         get = function() return window:IsLocked() end,
         set = function(locked) window:SetLocked(locked) end,
+    }), UI.CreateCheckbox(modal, "MARK_PLATES", {
+        get = function() return DB.markPlates end,
+        set = function(mark) DB.markPlates = mark; paintAll() end,
     }))
     modal:Finish(function()
         Logic.RestoreDefaults(DB)
@@ -338,9 +344,11 @@ local PARTY = { party1 = true, party2 = true, party3 = true, party4 = true }
 
 events:SetScript("OnEvent", function(_, event, unit)
     if event == "NAME_PLATE_UNIT_ADDED" then -- tracked always, so test mode / collapse never lose plates
+        Plates.Clear(unit) -- a reused plate must not keep the "!" of its previous enemy
         Threat.PlateAdded(unit)
         requestScan()
     elseif event == "NAME_PLATE_UNIT_REMOVED" then
+        Plates.Clear(unit)
         Threat.PlateRemoved(unit)
         requestScan()
     elseif event == "PLAYER_LOGIN" then

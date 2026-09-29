@@ -49,6 +49,7 @@ describe("Threat.Scan", function()
         local count = 0
         for _ in pairs(enemies) do count = count + 1 end
         assert.equal(2, count) -- target and nameplate1 are the same enemy
+        assert.equal("nameplate1", enemies.Skelettkrieger.unit) -- keeps its nameplate token (for the plate marker)
     end)
 
     it("turns secret threat or member data into UNKNOWN, never CONTROLLED", function()

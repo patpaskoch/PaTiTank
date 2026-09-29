@@ -11,6 +11,7 @@ Logic.DEFAULTS = {
     collapsed = false,
     scale = 1,
     language = "auto",
+    markPlates = true, -- "!" above the nameplate of a lost / barely held enemy (Plates.lua)
 }
 
 -- 0.1.0 saved x, y (CENTER offsets) and locked; they are kept as they are, so the window stays where it was

@@ -99,8 +99,10 @@ function Threat.Scan()
         enemy.state = Aggro.Classify(enemy)
         if enemy.state then enemies[#enemies + 1] = enemy end
     end
-    consider("target", next(plates) ~= nil)
+    -- Nameplates first: an enemy that is also your target keeps its nameplate token (Plates.lua marks that plate).
+    local hasPlates = next(plates) ~= nil
     for unit in pairs(plates) do consider(unit, false) end
+    consider("target", hasPlates)
     for _, unit in ipairs(PARTY_TARGETS) do consider(unit, true) end
     return enemies
 end
