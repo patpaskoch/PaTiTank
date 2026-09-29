@@ -101,3 +101,37 @@ describe("Aggro.Number", function()
         assert.same({}, map)
     end)
 end)
+
+describe("Aggro.Alerts (for the optional PaTiAlerts)", function()
+    local SECRET = setmetatable({}, { __eq = function() error("secret compared") end,
+        __concat = function() error("secret concatenated") end })
+    local function isSecret(value) return rawequal(value, SECRET) end
+    local function detail(enemy) return enemy.state == "DANGER" and "barely held" or "Healer" end
+
+    it("sends LOST as CRITICAL and DANGER as WARNING, with the panel/nameplate number", function()
+        local Aggro = load()
+        local rows = { { state = "LOST", guid = "G1", unit = "nameplate3", name = "Kultist" },
+            { state = "DANGER", guid = "G2", unit = "nameplate5", name = "Zombie" } }
+        local alerts = Aggro.Alerts(rows, { 1, 2 }, detail, "Unknown enemy", isSecret)
+        assert.same({ id = "aggro:G1", priority = "CRITICAL", kind = "AGGRO_LOST", number = 1, name = "Kultist",
+            detail = "Healer" }, alerts[1])
+        assert.same({ id = "aggro:G2", priority = "WARNING", kind = "AGGRO_DANGER", number = 2, name = "Zombie",
+            detail = "barely held" }, alerts[2])
+    end)
+
+    it("sends nothing for CONTROLLED or UNKNOWN, so a controlled enemy's alert disappears", function()
+        local Aggro = load()
+        local rows = { { state = "CONTROLLED", guid = "G1", name = "A" }, { state = "UNKNOWN", guid = "G2", name = "B" } }
+        assert.same({}, Aggro.Alerts(rows, {}, detail, "?", isSecret))
+    end)
+
+    it("keeps a secret name for display only, uses the token without a GUID, and no number without one", function()
+        local Aggro = load()
+        local alerts = Aggro.Alerts({ { state = "LOST", unit = "target", name = SECRET },
+            { state = "LOST", guid = "G9" } }, {}, detail, "Unknown enemy", isSecret)
+        assert.equal("aggro:target", alerts[1].id)
+        assert.is_true(rawequal(SECRET, alerts[1].name))
+        assert.is_nil(alerts[1].number)
+        assert.equal("Unknown enemy", alerts[2].text)
+    end)
+end)

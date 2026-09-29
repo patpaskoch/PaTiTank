@@ -144,6 +144,26 @@ local function holderText(enemy)
     return L[label] or L.OTHER_PLAYER
 end
 
+-- PaTiAlerts is optional (AGENTS.md §3): report only if it is installed with API version 1, never depend on it.
+-- pcall: a problem in PaTiAlerts must never break PaTiTank.
+local function alertsApi()
+    local api = _G.PaTiAlertsAPI
+    if type(api) == "table" and api.version == 1 and type(api.Sync) == "function" then return api end
+    return nil
+end
+
+-- Scans run while the panel is open, or while collapsed if PaTiAlerts shows the result instead.
+local function scanning()
+    return not DB.collapsed or alertsApi() ~= nil
+end
+
+-- Plain text for the right side of an alert (a secret holder name cannot be sent as text).
+local function alertDetail(enemy)
+    local text = holderText(enemy)
+    if isSecret(text) then return L.OTHER_PLAYER end
+    return text
+end
+
 local function applyLayout()
     content:SetShown(not DB.collapsed)
     window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or FULL_HEIGHT + shownRows * LINE)
@@ -157,8 +177,8 @@ local function paintAggro()
     local visible = {}
     for index = 1, count do visible[index] = summary.rows[index] end
     -- Row numbers and nameplate numbers come from this one list, in this one paint: they always name the same enemy.
-    -- Numbers only while marking is on; markers off in test mode (no real plates) and while collapsed (no scans then).
-    local marking = DB.markPlates and not DB.collapsed
+    -- Numbers only while marking is on; markers off in test mode (no real plates) and while no scans run.
+    local marking = DB.markPlates and scanning()
     local numbers = {}
     if marking then numbers, lastNumbers = Aggro.Number(visible, lastNumbers) else lastNumbers = {} end
     local marks = {}
@@ -170,6 +190,12 @@ local function paintAggro()
         end
     end
     Plates.Update(marks, marking and not testMode)
+    -- PaTiAlerts: the same rows with the same numbers; test mode sends nothing (its enemies are not real).
+    local api = alertsApi()
+    if api then
+        local alerts = testMode and {} or Aggro.Alerts(visible, numbers, alertDetail, L.UNKNOWN_ENEMY, isSecret)
+        pcall(api.Sync, "PaTiTank", alerts)
+    end
     if summary.total == 0 then
         aggroSummary:SetText(L.AGGRO_NONE)
     elseif #summary.rows > Aggro.MAX_ROWS then
@@ -230,7 +256,7 @@ scheduler:Hide()
 local due -- seconds until the next scan while the scheduler is shown
 
 local function requestScan()
-    if not DB or testMode or DB.collapsed then return end -- expanding repaints (paintAll)
+    if not DB or testMode or not scanning() then return end -- expanding repaints (paintAll)
     if not due or due > SCAN_DELAY then due = SCAN_DELAY end
     scheduler:Show()
 end

@@ -13,6 +13,7 @@ enemies you do not hold any more. Display only — it never targets or taunts.
   red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
   Unreadable data is shown as "unclear", never as "under control"
 - Enemies come from your target, visible nameplates and your party's targets
+- With **PaTiAlerts** installed (optional), the lost and barely held rows also appear there, with the same number
 - **Numbered nameplates:** every problem row gets a number (`1 Kultist → Healer`), and the same number stands above
   that enemy's nameplate — red = lost, yellow = barely held, grey = unclear. Two enemies with the same name are told
   apart by their number. Click the nameplate with that number to target the enemy, then taunt yourself.

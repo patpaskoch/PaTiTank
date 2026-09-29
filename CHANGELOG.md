@@ -5,6 +5,9 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
+- Optional PaTiAlerts report: every visible lost (critical) / barely held (warning) row goes to PaTiAlerts with the
+  same number as the panel and the nameplate; controlled, dead or vanished enemies disappear there too. Only if
+  PaTiAlerts is installed; nothing changes without it. While PaTiAlerts is installed, a collapsed panel keeps scanning.
 - AddOns list icon from the PaTiSuite icon set (`Media/icon.tga`, `## IconTexture`); platform images in `assets/`.
 - MIT license (`LICENSE`, not part of the release zip).
 - Numbered problem enemies: each problem row gets a number (1–4) and the same number stands above that enemy's

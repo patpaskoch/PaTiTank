@@ -77,6 +77,26 @@ function Aggro.Number(rows, previous)
     return numbers, nextMap
 end
 
+-- Alerts for PaTiAlerts (optional): one per visible LOST (CRITICAL) or DANGER (WARNING) row, carrying the same number
+-- as the panel row and the nameplate (numbers = Aggro.Number result; no number → none). UNKNOWN and CONTROLLED send
+-- nothing. The id is the readable GUID or the unit token — never a name. A name may be secret: it goes into `name`
+-- (display only) after the secrecy check; detailOf(enemy) must return a plain string.
+function Aggro.Alerts(rows, numbers, detailOf, unknownName, isSecret)
+    local list = {}
+    for index, enemy in ipairs(rows) do
+        local priority = (enemy.state == "LOST" and "CRITICAL") or (enemy.state == "DANGER" and "WARNING") or nil
+        local id = enemy.guid or (type(enemy.unit) == "string" and enemy.unit) or nil
+        if priority and id then
+            local alert = { id = "aggro:" .. id, priority = priority, number = numbers[index],
+                kind = priority == "CRITICAL" and "AGGRO_LOST" or "AGGRO_DANGER", detail = detailOf(enemy) }
+            local name = enemy.name
+            if isSecret(name) or name ~= nil then alert.name = name else alert.text = unknownName end
+            list[#list + 1] = alert
+        end
+    end
+    return list
+end
+
 -- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER".
 -- Role first (quickest to read), then name, then "other player".
 function Aggro.HolderLabel(holder)
