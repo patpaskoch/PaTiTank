@@ -5,6 +5,11 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
+- AddOns list icon from the PaTiSuite icon set (`Media/icon.tga`, `## IconTexture`); platform images in `assets/`.
+- MIT license (`LICENSE`, not part of the release zip).
+- Red/yellow "!" above the nameplate of an enemy you lost / barely hold (setting "Mark lost enemies on nameplates",
+  on by default). Click the nameplate to target it; the addon never targets or taunts. Panel rows are not clickable:
+  in combat WoW forbids pointing a secure button at a different enemy (see PaTiAdmin FOLLOW_UPS F17).
 - PaTiShared window with ••• menu (Settings, Lock/Unlock, Collapse/Expand, Test Mode, Hide), settings modal
   (language, scale, lock), `/pt settings, reset, debug, version`; `/pt` alone shows/hides the window.
 - English texts, German translation.
@@ -21,6 +26,7 @@ History before this file: `git log`.
 - Only your own UNIT_HEALTH/UNIT_MAXHEALTH updates the health bar (before: every unit's health event redrew everything).
 - Settings in PaTiTankDB get a schema; the 0.1.0 position and lock state are kept.
 ### Fixed
+- An enemy that is your target and has a nameplate keeps its nameplate token in the aggro scan.
 - The addon did not load: the TOC listed both Lua files on one line with a literal `` `r`n `` between them.
 - Target name and threat value are no longer concatenated/compared, so restricted (secret) values cannot cause errors.
 - Saving defaults into the saved variables on every login (`x = x or -330`) is gone.

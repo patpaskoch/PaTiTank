@@ -1,5 +1,7 @@
 # PaTiTank
 
+<img src="assets/icon-128.png" width="96" alt="PaTiTank icon">
+
 A small tank HUD for World of Warcraft: Forever (Interface 16001): your health, your threat on your target and which
 enemies you do not hold any more. Display only — it never targets or taunts.
 
@@ -11,6 +13,8 @@ enemies you do not hold any more. Display only — it never targets or taunts.
   red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
   Unreadable data is shown as "unclear", never as "under control"
 - Enemies come from your target, visible nameplates and your party's targets
+- **Nameplate marker:** a red "!" above the nameplate of an enemy you lost (yellow: barely held). Click that
+  nameplate to target the enemy, then taunt yourself. PaTiTank never targets or taunts on its own
 - ••• menu: Settings, Lock, Collapse, Test Mode, Hide. Settings: language, scale, lock.
   Languages: English, Deutsch (others fall back to English)
 
@@ -23,6 +27,10 @@ enemies you do not hold any more. Display only — it never targets or taunts.
 - `/pt test` shows the aggro display with six example enemies
 - Turn on enemy nameplates (default key V) so PaTiTank sees more than your target
 - `/pt` shows or hides the window
+- A red row appears: look for the red "!" above that enemy and click its nameplate to target it
+
+## Settings
+`/pt settings` or ••• → Settings: language, scale, window lock, "!" markers on nameplates on/off.
 
 ## Commands
 `/pt` or `/patitank` — alone: show/hide · `settings` · `test` · `show` · `hide` · `lock` · `unlock` · `reset` (position) ·
@@ -30,5 +38,10 @@ enemies you do not hold any more. Display only — it never targets or taunts.
 
 ## Known limitations
 - Enemies without a visible nameplate that nobody in your group targets are not seen.
-- Clicking a row does not target the enemy, and nameplates are not highlighted.
+- The rows in the panel are not clickable: WoW does not let an addon decide in combat which enemy a click targets.
+  Click the marked nameplate instead.
+- Markers need visible enemy nameplates; forbidden nameplates are left alone.
 - The threat APIs are not yet confirmed in the Forever client.
+
+## License
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Patrick Koch.
