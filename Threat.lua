@@ -79,7 +79,7 @@ end
 -- GUID for de-duplication (the same enemy can be target, nameplate and party target at once); nil if unreadable.
 local function guidOf(unit)
     local guid = UnitGUID and UnitGUID(unit)
-    if isSecret(guid) then return nil end
+    if isSecret(guid) or type(guid) ~= "string" then return nil end -- secrecy first; only plain strings are keys
     return guid
 end
 
@@ -96,6 +96,7 @@ function Threat.Scan()
         if seen[id] then return end
         seen[id] = true
         local enemy = readEnemy(unit)
+        enemy.guid = id ~= unit and id or nil -- readable GUID only (number stability in Aggro.Number)
         enemy.state = Aggro.Classify(enemy)
         if enemy.state then enemies[#enemies + 1] = enemy end
     end

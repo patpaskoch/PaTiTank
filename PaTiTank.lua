@@ -69,7 +69,7 @@ local aggroSummary = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
 aggroSummary:SetPoint("TOPRIGHT", -PAD, -aggroTop)
 aggroSummary:SetJustifyH("RIGHT")
 
-local HOLDER_WIDTH = 96
+local HOLDER_WIDTH, NUMBER_WIDTH = 96, 12
 local STATE_COLOR = { LOST = "Danger", DANGER = "Warning", UNKNOWN = "TextMuted" }
 local rows = {}
 for index = 1, Aggro.MAX_ROWS do
@@ -82,16 +82,23 @@ for index = 1, Aggro.MAX_ROWS do
     holder:SetWidth(HOLDER_WIDTH)
     holder:SetJustifyH("RIGHT")
     holder:SetWordWrap(false)
+    -- The number that also stands above this enemy's nameplate (empty: no plate that can be named safely).
+    local number = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Title)
+    number:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM, -top - 1)
+    number:SetWidth(NUMBER_WIDTH)
+    number:SetJustifyH("LEFT")
     local name = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-    name:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM, -top - 2)
+    name:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM + NUMBER_WIDTH + UI.Spacing.XS, -top - 2)
     name:SetPoint("RIGHT", holder, "LEFT", -UI.Spacing.SM, 0)
     name:SetJustifyH("LEFT")
     name:SetWordWrap(false)
-    rows[index] = { marker = marker, name = name, holder = holder }
+    rows[index] = { marker = marker, number = number, name = name, holder = holder }
 end
 
 local FULL_HEIGHT = UI.Sizes.HeaderHeight + aggroTop + LINE + PAD -- without aggro rows
 local shownRows = 0
+local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
+local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
 -- Paint (health and threat values may be secret: they only reach StatusBar widgets) --------------
 
@@ -120,10 +127,13 @@ local function paintTarget()
 end
 
 -- Test mode: 6 enemies, 4 held, 1 barely held, 1 on the healer. Names are looked up at paint time (language).
+-- Fake tokens/GUIDs only feed the numbering; test mode never draws on real nameplates.
 local TEST_ENEMIES = {
     { key = "TEST_ENEMY_1", state = "CONTROLLED" }, { key = "TEST_ENEMY_2", state = "CONTROLLED" },
-    { key = "TEST_ENEMY_3", state = "LOST", holder = { role = "HEALER" } }, { key = "TEST_ENEMY_4", state = "CONTROLLED" },
-    { key = "TEST_ENEMY_5", state = "DANGER" }, { key = "TEST_ENEMY_6", state = "CONTROLLED" },
+    { key = "TEST_ENEMY_3", state = "LOST", holder = { role = "HEALER" }, unit = "nameplate3", guid = "TEST-3" },
+    { key = "TEST_ENEMY_4", state = "CONTROLLED" },
+    { key = "TEST_ENEMY_5", state = "DANGER", unit = "nameplate5", guid = "TEST-5" },
+    { key = "TEST_ENEMY_6", state = "CONTROLLED" },
 }
 
 local function holderText(enemy)
@@ -142,10 +152,24 @@ end
 
 local function paintAggro()
     local enemies = testMode and TEST_ENEMIES or Threat.Scan()
-    -- "!" on the nameplates of lost/barely held enemies; off in test mode (no real plates) and while collapsed
-    -- (no scans then, so markers could go stale).
-    Plates.Update(enemies, DB.markPlates and not testMode and not DB.collapsed)
     local summary = Aggro.Summarize(enemies)
+    local count = math.min(#summary.rows, Aggro.MAX_ROWS)
+    local visible = {}
+    for index = 1, count do visible[index] = summary.rows[index] end
+    -- Row numbers and nameplate numbers come from this one list, in this one paint: they always name the same enemy.
+    -- Numbers only while marking is on; markers off in test mode (no real plates) and while collapsed (no scans then).
+    local marking = DB.markPlates and not DB.collapsed
+    local numbers = {}
+    if marking then numbers, lastNumbers = Aggro.Number(visible, lastNumbers) else lastNumbers = {} end
+    local marks = {}
+    rowUnit = {}
+    for index, enemy in ipairs(visible) do
+        if numbers[index] then
+            marks[#marks + 1] = { unit = enemy.unit, number = numbers[index], state = enemy.state }
+            rowUnit[index] = enemy.unit
+        end
+    end
+    Plates.Update(marks, marking and not testMode)
     if summary.total == 0 then
         aggroSummary:SetText(L.AGGRO_NONE)
     elseif #summary.rows > Aggro.MAX_ROWS then
@@ -155,16 +179,18 @@ local function paintAggro()
         aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total))
     end
     aggroSummary:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
-    local count = math.min(#summary.rows, Aggro.MAX_ROWS)
     for index, row in ipairs(rows) do
         local enemy = summary.rows[index]
         local shown = index <= count
         row.marker:SetShown(shown)
+        row.number:SetShown(shown)
         row.name:SetShown(shown)
         row.holder:SetShown(shown)
         if shown then
             local color = STATE_COLOR[enemy.state]
             row.marker:SetColorTexture(UI.Color(color))
+            row.number:SetText(numbers[index] and tostring(numbers[index]) or "")
+            row.number:SetTextColor(UI.Color(color))
             local name = enemy.key and L[enemy.key] or enemy.name
             if isSecret(name) or name ~= nil then row.name:SetText(name) else row.name:SetText(L.UNKNOWN_ENEMY) end
             row.holder:SetText(holderText(enemy))
@@ -174,6 +200,18 @@ local function paintAggro()
     if count ~= shownRows then
         shownRows = count
         applyLayout() -- no secure frames: resizing is fine in combat
+    end
+end
+
+-- A plate got a new unit or lost it: drop its number from the plate AND from the panel row at once, so no row keeps
+-- a number that no plate (or a different enemy's plate) shows. The next scan numbers again.
+local function forgetPlate(unit)
+    Plates.Clear(unit)
+    for index, token in pairs(rowUnit) do
+        if token == unit then
+            rows[index].number:SetText("")
+            rowUnit[index] = nil
+        end
     end
 end
 
@@ -344,11 +382,11 @@ local PARTY = { party1 = true, party2 = true, party3 = true, party4 = true }
 
 events:SetScript("OnEvent", function(_, event, unit)
     if event == "NAME_PLATE_UNIT_ADDED" then -- tracked always, so test mode / collapse never lose plates
-        Plates.Clear(unit) -- a reused plate must not keep the "!" of its previous enemy
+        forgetPlate(unit) -- a reused plate must not keep the number of its previous enemy
         Threat.PlateAdded(unit)
         requestScan()
     elseif event == "NAME_PLATE_UNIT_REMOVED" then
-        Plates.Clear(unit)
+        forgetPlate(unit)
         Threat.PlateRemoved(unit)
         requestScan()
     elseif event == "PLAYER_LOGIN" then

@@ -7,7 +7,7 @@ Addon facts: `../../PaTiAdmin/docs/ARCHITECTURE.md` · open issues: `../../PaTiA
 - Purpose: own health, current target and your threat on it, plus an aggro control monitor, for a tank.
   Display only: never targets, taunts or clicks anything.
 - Files: `Logic.lua` (settings, threat value; pure, tested) · `Aggro.lua` (aggro states/summary; pure, tested) ·
-  `Threat.lua` (the only threat/nameplate API calls; tested with mocks) · `Plates.lua` ("!" marker frames on
+  `Threat.lua` (the only threat/nameplate API calls; tested with mocks) · `Plates.lua` (number marker frames on
   nameplates; tested with mocks) ·
   `PaTiTank.lua` (window, paint, scan scheduler, settings, commands, events) ·
   `Locales/` · `Shared/` (PaTiShared, synced — never edit).

@@ -60,3 +60,44 @@ describe("Aggro.HolderLabel", function()
         assert.equal("OTHER", Aggro.HolderLabel(nil))
     end)
 end)
+
+describe("Aggro.Number", function()
+    local function row(unit, guid, state) return { unit = unit, guid = guid, state = state or "LOST" } end
+
+    it("numbers the visible problem rows with their own nameplate, in row order", function()
+        local Aggro = load()
+        local numbers = Aggro.Number({ row("nameplate4", "A"), row("nameplate2", "B", "DANGER"),
+            row("nameplate7", "C", "UNKNOWN") }, {})
+        assert.same({ 1, 2, 3 }, numbers)
+    end)
+
+    it("gives no number to a row without a nameplate token, and none to two rows sharing a token", function()
+        local Aggro = load()
+        assert.same({ [1] = 1 }, (Aggro.Number({ row("nameplate1", "A"), row("target", "B"), row(nil, nil) }, {})))
+        local numbers = Aggro.Number({ row("nameplate1", "A"), row("nameplate1", nil), row("nameplate2", "C") }, {})
+        assert.is_nil(numbers[1])
+        assert.is_nil(numbers[2])
+        assert.equal(1, numbers[3])
+    end)
+
+    it("keeps an enemy's number while it stays visible, also when the row order changes", function()
+        local Aggro = load()
+        local _, map = Aggro.Number({ row("nameplate1", "A"), row("nameplate2", "B") }, {})
+        assert.same({ A = 1, B = 2 }, map)
+        local numbers = Aggro.Number({ row("nameplate2", "B"), row("nameplate1", "A") }, map) -- B now sorts first
+        assert.same({ 2, 1 }, numbers)
+    end)
+
+    it("reuses freed numbers, forgets enemies that left, never keeps a number above MAX_ROWS", function()
+        local Aggro = load()
+        local numbers, map = Aggro.Number({ row("nameplate3", "C"), row("nameplate9", "N") }, { A = 1, C = 2, X = 9 })
+        assert.same({ 2, 1 }, numbers) -- C keeps 2, the new enemy takes the free 1
+        assert.same({ C = 2, N = 1 }, map)
+        assert.same({ 1 }, (Aggro.Number({ row("nameplate1", "X") }, { X = 9 })))
+    end)
+
+    it("keeps no number for enemies without a readable GUID", function()
+        local _, map = load().Number({ row("nameplate1", nil) }, {})
+        assert.same({}, map)
+    end)
+end)

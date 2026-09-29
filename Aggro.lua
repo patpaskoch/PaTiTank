@@ -45,6 +45,38 @@ function Aggro.Summarize(enemies)
     return summary
 end
 
+-- Numbers for the visible problem rows, so a row and its nameplate marker name the same enemy ("1 Kultist → Healer"
+-- ↔ "1" above that Kultist). rows: Summarize(...).rows cut to MAX_ROWS; previous: guid -> number of the last paint.
+-- Only rows with their own nameplate token get a number (the marker lives on exactly that plate); two rows with the
+-- same token are ambiguous and get none — no number is better than a wrong one. A readable GUID (enemy.guid, never a
+-- secret value) keeps its number while the enemy stays visible; the others take the lowest free numbers.
+-- Returns numbers[rowIndex] (nil = no number) and the new guid -> number map.
+function Aggro.Number(rows, previous)
+    local tokenCount = {}
+    for _, enemy in ipairs(rows) do
+        if type(enemy.unit) == "string" and enemy.unit:match("^nameplate%d+$") then
+            tokenCount[enemy.unit] = (tokenCount[enemy.unit] or 0) + 1
+        end
+    end
+    local numbers, used, nextMap = {}, {}, {}
+    local function eligible(enemy) return enemy.unit ~= nil and tokenCount[enemy.unit] == 1 end
+    for index, enemy in ipairs(rows) do -- keep the numbers of enemies that had one
+        local kept = eligible(enemy) and enemy.guid and previous[enemy.guid]
+        if kept and kept <= Aggro.MAX_ROWS and not used[kept] then
+            numbers[index], used[kept] = kept, true
+        end
+    end
+    for index, enemy in ipairs(rows) do -- everyone else: lowest free number
+        if eligible(enemy) and not numbers[index] then
+            local free = 1
+            while used[free] do free = free + 1 end
+            numbers[index], used[free] = free, true
+        end
+        if numbers[index] and enemy.guid then nextMap[enemy.guid] = numbers[index] end
+    end
+    return numbers, nextMap
+end
+
 -- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER".
 -- Role first (quickest to read), then name, then "other player".
 function Aggro.HolderLabel(holder)

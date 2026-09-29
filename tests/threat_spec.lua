@@ -50,6 +50,7 @@ describe("Threat.Scan", function()
         for _ in pairs(enemies) do count = count + 1 end
         assert.equal(2, count) -- target and nameplate1 are the same enemy
         assert.equal("nameplate1", enemies.Skelettkrieger.unit) -- keeps its nameplate token (for the plate marker)
+        assert.equal("G1", enemies.Skelettkrieger.guid) -- readable GUID: key for stable numbers
     end)
 
     it("turns secret threat or member data into UNKNOWN, never CONTROLLED", function()
@@ -63,6 +64,17 @@ describe("Threat.Scan", function()
         local enemies = byName(ns.Threat.Scan())
         assert.equal("UNKNOWN", enemies.A.state)
         assert.equal("UNKNOWN", enemies.B.state)
+    end)
+
+    it("never uses a secret GUID as identity", function()
+        local ns = setup({
+            player = {},
+            nameplate1 = { enemy = true, guid = SECRET, name = "A" },
+        }, { nameplate1 = { player = 0 } })
+        ns.Threat.PlateAdded("nameplate1")
+        local enemies = ns.Threat.Scan()
+        assert.equal(1, #enemies)
+        assert.is_nil(enemies[1].guid)
     end)
 
     it("skips dead enemies, friendly units and enemies nobody of the group fights", function()

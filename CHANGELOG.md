@@ -7,8 +7,11 @@ History before this file: `git log`.
 ### Added
 - AddOns list icon from the PaTiSuite icon set (`Media/icon.tga`, `## IconTexture`); platform images in `assets/`.
 - MIT license (`LICENSE`, not part of the release zip).
-- Red/yellow "!" above the nameplate of an enemy you lost / barely hold (setting "Mark lost enemies on nameplates",
-  on by default). Click the nameplate to target it; the addon never targets or taunts. Panel rows are not clickable:
+- Numbered problem enemies: each problem row gets a number (1–4) and the same number stands above that enemy's
+  nameplate, coloured by state (lost red, barely held yellow, unclear grey) — also tells same-named enemies apart.
+  Only rows with their own nameplate get a number; an enemy keeps its number while visible (readable GUID only).
+  A reused or removed nameplate loses its number at once, on the plate and in the panel. Setting "Number problem
+  enemies on nameplates", on by default. Click the nameplate to target it; the addon never targets or taunts. Panel rows are not clickable:
   in combat WoW forbids pointing a secure button at a different enemy (see PaTiAdmin FOLLOW_UPS F17).
 - PaTiShared window with ••• menu (Settings, Lock/Unlock, Collapse/Expand, Test Mode, Hide), settings modal
   (language, scale, lock), `/pt settings, reset, debug, version`; `/pt` alone shows/hides the window.
@@ -35,4 +38,4 @@ History before this file: `git log`.
 ### Known Issues
 - Not tested in game yet (threat values, layout, secret values in combat, the whole aggro monitor).
 - Aggro: enemies without a visible nameplate that nobody in your group targets are not seen. Clicking a row does
-  not target the enemy, and nameplates are not highlighted (see PaTiAdmin FOLLOW_UPS F16/F17).
+  not target the enemy (technically blocked, PaTiAdmin FOLLOW_UPS F17); click the numbered nameplate instead.
