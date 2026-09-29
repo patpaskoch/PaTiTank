@@ -15,6 +15,8 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- AddOns list description in English with a German translation (`## Notes-deDE`); README rewritten for players
+  (features, installation, first steps, commands, known limitations).
 - New PaTiShared look instead of the legacy panel (gear, chevron, close button).
 - Only your own UNIT_HEALTH/UNIT_MAXHEALTH updates the health bar (before: every unit's health event redrew everything).
 - Settings in PaTiTankDB get a schema; the 0.1.0 position and lock state are kept.

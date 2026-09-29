@@ -1,6 +1,7 @@
 ## Interface: 16001
 ## Title: PaTiTank
-## Notes: Kompakte Tankanzeige fuer den installierten WoW-Client
+## Notes: Tank HUD: own health, threat on your target and which enemies you lost
+## Notes-deDE: Tank-Anzeige: eigene Gesundheit, Bedrohung auf dem Ziel und verlorene Gegner
 ## Author: PaTi
 ## Version: 0.1.0
 ## SavedVariablesPerCharacter: PaTiTankDB

@@ -1,22 +1,34 @@
 # PaTiTank
 
-Kompakte Tankanzeige für den WoW-Forever-Client (Interface 16001): eigene Gesundheit, aktuelles Ziel und deine
-Bedrohung auf diesem Ziel, dazu der Aggro-Kontroll-Monitor. Reine Anzeige – PaTiTank löst nichts aus,
-wählt kein Ziel und spottet nicht.
+A small tank HUD for World of Warcraft: Forever (Interface 16001): your health, your threat on your target and which
+enemies you do not hold any more. Display only — it never targets or taunts.
 
-## Funktionen
-- Balken für die eigene Gesundheit und für deine Bedrohung auf das Ziel (0–100 %)
-- Name des aktuellen Ziels
-- **Aggro-Kontrolle**: „AGGRO 5 / 6 unter Kontrolle“ und bis zu 4 Warnzeilen „Gegner → wer ihn hat“
-  (Rolle, sonst Name, sonst „anderer Spieler“). Rot = verloren, Gelb = knapp gehalten, Grau = unklar.
-  „Unter Kontrolle“ zählt Gegner, die du hältst (auch knapp). Unklare Werte zählen nie als kontrolliert.
-  Gegner kommen aus deinem Ziel, den sichtbaren Namensplaketten und den Zielen deiner Gruppe – Gegner ohne
-  sichtbare Plakette, die niemand anvisiert, sieht das Addon nicht.
-- Menü `•••`: Einstellungen, Sperren/Entsperren, Ein-/Ausklappen, Testmodus, Ausblenden
-- Einstellungen: Sprache, Größe, Fenstersperre; Position wird gespeichert
+> Status: 0.1.0, in development, not yet released. Not yet tested in game.
 
-## Befehle
-`/pt`, `/patitank` — ohne Zusatz ein-/ausblenden; `show`, `hide`, `test`, `lock`, `unlock`, `reset` (Position),
-`settings`, `debug`, `version`.
+## Features
+- Your health bar, your current target and your threat on it
+- **Aggro control:** `AGGRO 5 / 6 under control` plus up to four rows for enemies that need you:
+  red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
+  Unreadable data is shown as "unclear", never as "under control"
+- Enemies come from your target, visible nameplates and your party's targets
+- ••• menu: Settings, Lock, Collapse, Test Mode, Hide. Settings: language, scale, lock.
+  Languages: English, Deutsch (others fall back to English)
 
-Gemeinsame Oberfläche: PaTiShared UI (eingebettet in `Shared/`, kein separates Addon nötig).
+## Installation
+1. Download the release zip (`PaTiTank-<version>.zip`).
+2. Unpack it and copy the folder `PaTiTank` into `World of Warcraft/<client>/Interface/AddOns/`.
+3. Start WoW and enable PaTiTank in the AddOns list.
+
+## First steps
+- `/pt test` shows the aggro display with six example enemies
+- Turn on enemy nameplates (default key V) so PaTiTank sees more than your target
+- `/pt` shows or hides the window
+
+## Commands
+`/pt` or `/patitank` — alone: show/hide · `settings` · `test` · `show` · `hide` · `lock` · `unlock` · `reset` (position) ·
+`debug` (also shows which threat APIs your client offers) · `version`
+
+## Known limitations
+- Enemies without a visible nameplate that nobody in your group targets are not seen.
+- Clicking a row does not target the enemy, and nameplates are not highlighted.
+- The threat APIs are not yet confirmed in the Forever client.
