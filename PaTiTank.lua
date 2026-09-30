@@ -298,8 +298,10 @@ local function buildSettings()
         get = function() return DB.markPlates end,
         set = function(mark) DB.markPlates = mark; paintAll() end,
     }))
+    UI.AddWindowSettings(modal, window) -- panel opacity + snapping (PaTiShared)
     modal:Finish(function()
         Logic.RestoreDefaults(DB)
+        window:ApplyOpacity()
         UI.SetLanguage(DB.language)
         window:SetLocked(DB.locked)
         window:SetScale(DB.scale)
@@ -327,10 +329,14 @@ local function toggleCollapsed()
     paintAll()
 end
 
-local function setShown(shown)
+local function setShown(shown, quiet) -- no secure frames: fine in combat
     window:SetShown(shown)
-    if not shown then say("HIDDEN_HINT") end
+    if not shown and not quiet then say("HIDDEN_HINT") end
+    return true
 end
+
+-- Optional PaTiSuite control panel: the same rules as the commands, without chat lines (false = not possible now).
+window.suiteSetShown = function(shown) return setShown(shown, true) end
 
 local function resetPosition()
     DB.point, DB.relativePoint, DB.x, DB.y = nil, nil, nil, nil

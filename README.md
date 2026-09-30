@@ -36,6 +36,7 @@ enemies you do not hold any more. Display only — it never targets or taunts.
 
 ## Settings
 `/pt settings` or ••• → Settings: language, scale, window lock, numbers on nameplates on/off (off: no numbers at all).
+- **Window:** panel opacity (30–100 %) and snapping to other PaTi windows while dragging
 
 ## Commands
 `/pt` or `/patitank` — alone: show/hide · `settings` · `test` · `show` · `hide` · `lock` · `unlock` · `reset` (position) ·

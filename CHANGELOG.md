@@ -5,6 +5,9 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
+- Window settings (PaTiShared): panel opacity 30–100 % (default 75 %, the header stays opaque) and snapping to other
+  PaTi windows while dragging (on by default; never in combat). The window registers itself for the optional
+  PaTiSuite control panel, which shows/hides it with this addon's own rules.
 - Optional PaTiAlerts report: every visible lost (critical) / barely held (warning) row goes to PaTiAlerts with the
   same number as the panel and the nameplate; controlled, dead or vanished enemies disappear there too. Only if
   PaTiAlerts is installed; nothing changes without it. While PaTiAlerts is installed, a collapsed panel keeps scanning.
