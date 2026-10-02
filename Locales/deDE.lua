@@ -4,6 +4,7 @@ ns.Locales = ns.Locales or {}
 local L = ns.Locales.deDE or {}
 ns.Locales.deDE = L
 
+L.GENERAL = "Allgemein"
 L.TARGET = "Ziel:"
 L.NO_TARGET = "Kein Ziel ausgewählt"
 L.OWN_HEALTH = "Eigene Gesundheit"

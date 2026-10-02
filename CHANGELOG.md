@@ -35,6 +35,7 @@ History before this file: `git log`.
 - Only your own UNIT_HEALTH/UNIT_MAXHEALTH updates the health bar (before: every unit's health event redrew everything).
 - Settings in PaTiTankDB get a schema; the 0.1.0 position and lock state are kept.
 ### Fixed
+- Settings: the first section title showed the key "GENERAL" (no text for it); now "General" / "Allgemein" (FOLLOW_UPS F30).
 - An enemy that is your target and has a nameplate keeps its nameplate token in the aggro scan.
 - The addon did not load: the TOC listed both Lua files on one line with a literal `` `r`n `` between them.
 - Target name and threat value are no longer concatenated/compared, so restricted (secret) values cannot cause errors.
