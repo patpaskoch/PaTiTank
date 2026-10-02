@@ -29,10 +29,12 @@ This addon is part of the **PaTiSuite** — a collection of small addons for Wor
 Each one is installed on its own and works on its own; none of them is needed by another.
 
 - [PaTiSuite](https://github.com/patpaskoch/PaTiSuite) – optional control panel to show and hide the PaTi windows
-- [PaTiHeal](https://github.com/patpaskoch/PaTiHeal) – healer party frames and click casting
-- [PaTiAuras](https://github.com/patpaskoch/PaTiAuras) – buff, aura and proc watcher
+- [PaTiHeal](https://github.com/patpaskoch/PaTiHeal) – healing: party frames, heal target, click casting, HoTs, dispels
+- [PaTiAuras](https://github.com/patpaskoch/PaTiAuras) – buffs, procs, tracking, group buffs and weapon imbues
 - **PaTiTank** – tank HUD and aggro monitor *(this addon)*
-- [PaTiGroup](https://github.com/patpaskoch/PaTiGroup) – raid markers, ready check and pull timer
+- [PaTiRota](https://github.com/patpaskoch/PaTiRota) – your own skill priority with cooldowns and fixed cast buttons
+- [PaTiGroup](https://github.com/patpaskoch/PaTiGroup) – party awareness: tank, healer, roles and the tank's target
+- [PaTiLead](https://github.com/patpaskoch/PaTiLead) – lead the group: raid markers, ready check and pull timer
 - [PaTiQuest](https://github.com/patpaskoch/PaTiQuest) – selected quest and its objectives
 - [PaTiDungeon](https://github.com/patpaskoch/PaTiDungeon) – instance, group and combat status
 - [PaTiSocial](https://github.com/patpaskoch/PaTiSocial) – "Party Social": quick emote and message buttons
@@ -41,7 +43,7 @@ Each one is installed on its own and works on its own; none of them is needed by
 ### Goes well with (optional)
 
 - [PaTiAlerts](https://github.com/patpaskoch/PaTiAlerts) – lists enemies you lost or barely hold, with the same number as the panel and the nameplate
-- [PaTiGroup](https://github.com/patpaskoch/PaTiGroup) – manual group tools: raid markers, ready check, pull timer
+- [PaTiLead](https://github.com/patpaskoch/PaTiLead) – manual group tools: raid markers, ready check, pull timer
 - [PaTiSuite](https://github.com/patpaskoch/PaTiSuite) – shows and hides this window together with the other PaTi windows
 
 ## Installation
