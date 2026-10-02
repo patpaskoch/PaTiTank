@@ -18,10 +18,12 @@ Logic.DEFAULTS = {
 -- 0.1.0 saved x, y (CENTER offsets) and locked; they are kept as they are, so the window stays where it was
 -- (the PaTiShared window reads a missing point as CENTER). Missing values get defaults; saved false stays false.
 function Logic.Migrate(db)
-    db = db or {}
+    if type(db) ~= "table" then db = {} end -- nil or a broken save (string, number …): start fresh
     for key, value in pairs(Logic.DEFAULTS) do
         if db[key] == nil then db[key] = value end
     end
+    -- A broken scale would make SetScale fail on login: only a sane number is kept (saved values elsewhere stay).
+    if type(db.scale) ~= "number" or db.scale < 0.5 or db.scale > 2 then db.scale = Logic.DEFAULTS.scale end
     db.schema = Logic.SCHEMA
     return db
 end
