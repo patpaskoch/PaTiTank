@@ -24,6 +24,7 @@ end
 -- Window ---------------------------------------------------------------------------------------
 
 local window = UI.CreateWindow("PaTiTankFrame", "PaTiTank", WIDTH, 120)
+window:SetCombatMovable(true) -- no secure children: may be dragged in combat too (PaTiShared)
 local content = CreateFrame("Frame", nil, window) -- everything below the header; hidden when collapsed
 content:SetPoint("TOPLEFT", 0, -UI.Sizes.HeaderHeight)
 content:SetPoint("BOTTOMRIGHT")
