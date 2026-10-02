@@ -21,7 +21,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 - [ ] PT-TANK-001 Fresh Install aus dem Release-ZIP: genau ein Ordner `PaTiTank/`, Addon lädt allein
 - [ ] PT-TANK-002 PaTiTank erscheint in der AddOn-Liste mit Beschreibung
-- [ ] PT-TANK-003 Icon in der AddOn-Liste korrekt, keine weiße oder fehlende Textur
+- [x] PT-TANK-003 Icon in der AddOn-Liste korrekt, keine weiße oder fehlende Textur
+  - ✅ VERIFIED 2026-10-02
+  - Owner: die Icons erscheinen im Spiel in der AddOn-Liste korrekt.
 - [ ] PT-TANK-004 Login ohne Lua-Fehler
 - [ ] PT-TANK-005 `/reload` ohne Lua-Fehler
 - [ ] PT-TANK-006 `/pt debug` nennt die vorhandenen Threat-APIs und eine Aggro-Zeile
