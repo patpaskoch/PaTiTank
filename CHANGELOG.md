@@ -29,6 +29,7 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- Diagnostics (hardening 2026-10-02): errors that are caught so the addon keeps running are no longer silent — the debug command shows the last caught error per source (no chat spam, nothing saved).
 - The window can also be moved in combat (it has no secure buttons; PaTiShared `SetCombatMovable`, hardening 2026-10-02). A broken saved position falls back to the default instead of breaking the login.
 - AddOns list description in English with a German translation (`## Notes-deDE`); README rewritten for players
   (features, installation, first steps, commands, known limitations).

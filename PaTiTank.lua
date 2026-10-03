@@ -145,6 +145,8 @@ local function holderText(enemy)
     return L[label] or L.OTHER_PLAYER
 end
 
+local alertsError -- last error PaTiAlerts raised in Sync (diagnostics only, /pt debug)
+
 -- PaTiAlerts is optional (AGENTS.md §3): report only if it is installed with API version 1, never depend on it.
 -- pcall: a problem in PaTiAlerts must never break PaTiTank.
 local function alertsApi()
@@ -195,7 +197,8 @@ local function paintAggro()
     local api = alertsApi()
     if api then
         local alerts = testMode and {} or Aggro.Alerts(visible, numbers, alertDetail, L.UNKNOWN_ENEMY, isSecret)
-        pcall(api.Sync, "PaTiTank", alerts)
+        local ok, err = pcall(api.Sync, "PaTiTank", alerts)
+        if not ok then alertsError = tostring(err):sub(1, 120) end -- /pt debug only; PaTiTank keeps running
     end
     if summary.total == 0 then
         aggroSummary:SetText(L.AGGRO_NONE)
@@ -364,6 +367,8 @@ local function printDebug()
         ("Aggro: UnitThreatSituation %s · nameplate events %s · party target events %s"):format(
             UnitThreatSituation and "yes" or "no", aggroEventsOk("NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED"),
             aggroEventsOk("UNIT_TARGET")),
+        ("Last caught errors: threat API %s · PaTiAlerts %s"):format(Threat.lastError or "none",
+            alertsError or "none"),
     }) do print("  " .. line) end
 end
 

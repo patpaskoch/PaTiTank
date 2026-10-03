@@ -28,6 +28,7 @@ function Threat.PlateRemoved(unit) if type(unit) == "string" then plates[unit] =
 local function situation(unit, enemy)
     if not UnitThreatSituation then return UNREADABLE end
     local ok, status = pcall(UnitThreatSituation, unit, enemy)
+    if not ok then Threat.lastError = tostring(status):sub(1, 120) end -- /pt debug only
     if not ok or isSecret(status) then return UNREADABLE end
     if status ~= nil and type(status) ~= "number" then return UNREADABLE end
     return status
