@@ -1,4 +1,5 @@
--- PaTiTank: own health, current target and your threat on it. Display only; no secure frames.
+-- PaTiTank: current target, your threat on it and the aggro monitor. Display only; no secure frames. No own
+-- health bar since 2026-10-10 (owner: the tank addon is about threat and aggro only).
 local addonName, ns = ...
 local UI, L, Logic, Aggro, Threat, Plates = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat, ns.Plates
 
@@ -7,8 +8,8 @@ local testMode = false
 local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
-local HEALTH_HEIGHT, THREAT_HEIGHT = 22, 16
-local TEST = { health = 68, threat = 72 } -- test mode values in percent
+local THREAT_HEIGHT = 16
+local TEST = { threat = 72 } -- test mode value in percent
 
 local function say(key, ...)
     print("|cff68caffPaTiTank:|r " .. L[key]:format(...))
@@ -55,9 +56,7 @@ local function makeBar(top, height, color, labelKey)
     return bar
 end
 
-local healthTop = UI.Spacing.SM + LINE + UI.Spacing.SM
-local threatTop = healthTop + HEALTH_HEIGHT + UI.Spacing.MD
-local health = makeBar(healthTop, HEALTH_HEIGHT, "Health", "OWN_HEALTH")
+local threatTop = UI.Spacing.SM + LINE + UI.Spacing.SM
 local threat = makeBar(threatTop, THREAT_HEIGHT, "Danger", "THREAT")
 threat:SetMinMaxValues(0, 100)
 
@@ -101,17 +100,7 @@ local shownRows = 0
 local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
--- Paint (health and threat values may be secret: they only reach StatusBar widgets) --------------
-
-local function paintHealth()
-    if testMode then
-        health:SetMinMaxValues(0, 100)
-        health:SetValue(TEST.health)
-        return
-    end
-    health:SetMinMaxValues(0, UnitHealthMax("player"))
-    health:SetValue(UnitHealth("player"))
-end
+-- Paint (threat values may be secret: they only reach the StatusBar widget) ------------------------------
 
 local function paintTarget()
     if testMode then
@@ -247,7 +236,6 @@ end
 
 local function paintAll()
     if not DB then return end
-    paintHealth()
     paintTarget()
     paintAggro()
 end
@@ -407,7 +395,7 @@ end)
 -- Events ---------------------------------------------------------------------------------------
 
 local events = CreateFrame("Frame")
-for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD", "UNIT_HEALTH", "UNIT_MAXHEALTH",
+for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD",
     "PLAYER_TARGET_CHANGED", "UNIT_THREAT_LIST_UPDATE", "UNIT_THREAT_SITUATION_UPDATE" }) do
     events:RegisterEvent(event)
 end
@@ -438,8 +426,6 @@ events:SetScript("OnEvent", function(_, event, unit)
         paintAll()
     elseif not DB or testMode then
         return
-    elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH" then
-        if unit == "player" then paintHealth() end -- hot path: every unit fires this; only yours matters
     elseif event == "PLAYER_ENTERING_WORLD" then
         paintAll()
     elseif event == "UNIT_TARGET" then

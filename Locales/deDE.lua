@@ -7,7 +7,6 @@ ns.Locales.deDE = L
 L.GENERAL = "Allgemein"
 L.TARGET = "Ziel:"
 L.NO_TARGET = "Kein Ziel ausgewählt"
-L.OWN_HEALTH = "Eigene Gesundheit"
 L.THREAT = "Bedrohung auf Ziel"
 L.TEST_TARGET = "Testgegner"
 L.LOCK_WINDOW = "Fenster sperren"

@@ -7,7 +7,6 @@ ns.Locales.enUS = L
 L.GENERAL = "General"
 L.TARGET = "Target:"
 L.NO_TARGET = "No target selected"
-L.OWN_HEALTH = "Own health"
 L.THREAT = "Threat on target"
 L.TEST_TARGET = "Test enemy"
 L.LOCK_WINDOW = "Lock window"

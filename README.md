@@ -2,13 +2,13 @@
 
 <img src="assets/icon-128.png" width="96" alt="PaTiTank icon">
 
-A small tank HUD for World of Warcraft: Forever (Interface 16001): your health, your threat on your target and which
+A small tank HUD for World of Warcraft: Forever (Interface 16001): your threat on your target and which
 enemies you do not hold any more. Display only — it never targets or taunts.
 
 > Status: 0.1.0, in development, not yet released. Not yet tested in game.
 
 ## Features
-- Your health bar, your current target and your threat on it
+- Your current target and your threat on it (no own health bar — that is not the tank addon's job)
 - **Aggro control:** `AGGRO 5 / 6 under control` plus up to four rows for enemies that need you:
   red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
   Unreadable data is shown as "unclear", never as "under control"

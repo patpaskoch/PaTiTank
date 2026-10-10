@@ -59,7 +59,12 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 ## Basic HUD
 
-- [ ] PT-TANK-050 Eigene Gesundheit aktualisiert sich
+- ~~PT-TANK-050 Eigene Gesundheit aktualisiert sich~~
+  - RETIRED 2026-10-10 – eigener Lebensbalken entfernt (Owner: PaTiTank nur Bedrohung und Aggro)
+- [ ] PT-TANK-113 Kein eigener Lebensbalken mehr: oben Ziel, darunter Bedrohung, dann Aggro-Block; keine Lücke, Fenster passt
+  sich an; `/pt test` ebenso
+  - 🔧 FIX IMPLEMENTED 2026-10-10 (Owner: kein Lebensbalken im Tank-Addon)
+  - MANUAL RETEST REQUIRED
 - [ ] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
 - [ ] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
 

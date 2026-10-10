@@ -45,6 +45,8 @@ History before this file: `git log`.
 - Target name and threat value are no longer concatenated/compared, so restricted (secret) values cannot cause errors.
 - Saving defaults into the saved variables on every login (`x = x or -330`) is gone.
 ### Removed
+- Own health bar (owner 2026-10-10: PaTiTank is about threat and aggro only). Target, threat bar and the aggro monitor
+  move up.
 - `PaTiSharedPanel.lua` (legacy shared panel global).
 ### Known Issues
 - Not tested in game yet (threat values, layout, secret values in combat, the whole aggro monitor).
